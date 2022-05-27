@@ -2,6 +2,7 @@ package golangci
 
 import (
 	"dagger.io/dagger"
+	"dagger.io/dagger/core"
 
 	"universe.dagger.io/docker"
 	"universe.dagger.io/go"
@@ -15,14 +16,17 @@ import (
 	// golangci-lint version
 	version: *"1.46" | string
 
-	// timeout
+	// Timeout
 	timeout: *"5m" | string
 
 	_image: docker.#Pull & {
-		source: "golangci/golangci-lint:v\(version)"
+		source: "index.docker.io/golangci/golangci-lint:v\(version)"
 	}
 
+	_cachePath: "/root/.cache/golangci-lint"
+
 	go.#Container & {
+		name:     *"go_builder" | string
 		"source": source
 		input:    _image.output
 		command: {
@@ -33,5 +37,12 @@ import (
 				"--timeout": timeout
 			}
 		}
+		mounts: "golangci cache": {
+			contents: core.#CacheDir & {
+				id: "\(name)_golangci"
+			}
+			dest: _cachePath
+		}
+		env: GOLANGCI_LINT_CACHE: _cachePath
 	}
 }
