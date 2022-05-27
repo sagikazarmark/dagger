@@ -26,7 +26,7 @@ import (
 	_cachePath: "/root/.cache/golangci-lint"
 
 	go.#Container & {
-		name:     *"go_builder" | string
+		name:     *"golangci_lint" | string
 		"source": source
 		input:    _image.output
 		command: {
