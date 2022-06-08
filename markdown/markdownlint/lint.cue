@@ -1,4 +1,4 @@
-package buf
+package markdownlint
 
 import (
 	"dagger.io/dagger"
@@ -6,29 +6,28 @@ import (
 	"universe.dagger.io/docker"
 )
 
-// Lint protobuf files using buf
+// Lint markdown files using markdownlint
 #Lint: {
 	// Source code
 	source: dagger.#FS
 
-	// buf version
-	version: *"1.5.0" | string
+	// markdownlint version
+	version: *"0.31.1" | string
+
+	// Files to lint
+	files: [...string]
 
 	_image: docker.#Pull & {
-		source: "index.docker.io/bufbuild/buf:\(version)"
+		source: "tmknom/markdownlint:\(version)"
 	}
 
 	_sourcePath: "/src"
 
 	docker.#Run & {
 		input: *_image.output | docker.#Image
-		entrypoint: []
 		command: {
-			name: "buf"
-			args: ["lint"]
-			flags: {
-				"-v": true
-			}
+			name: "markdownlint"
+			args: files
 		}
 		workdir: _sourcePath
 		mounts: "source": {
